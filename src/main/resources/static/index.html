@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>UniPool · Campus Rides</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #00b170;
+      --primary-soft: #d6f3e8;
+      --surface: #f5f7fb;
+      --surface-1: #ffffff;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --outline-soft: #e5e7eb;
+      --shadow-low: 0 2px 6px rgba(15, 23, 42, 0.08);
+      --shadow-med: 0 16px 40px rgba(15, 23, 42, 0.18);
+      --radius-l: 24px;
+      --radius-m: 18px;
+      --radius-s: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .app {
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--surface-1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.15);
+    }
+
+    /* App bar */
+
+    .app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px 8px;
+      background: linear-gradient(135deg, #ecfdf3 0, #ffffff 40%, #f2f5ff 100%);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .app-bar__left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 0 0, #ecfdf3 0, var(--primary) 50%, #065f46 100%);
+      display: grid;
+      place-items: center;
+      color: white;
+      box-shadow: var(--shadow-low);
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .app-bar__text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .app-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .app-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .chip-ghost {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 6px 12px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      box-shadow: var(--shadow-low);
+      cursor: pointer;
+    }
+
+    .chip-ghost-icon {
+      font-size: 14px;
+    }
+
+    /* Main */
+
+    .main {
+      flex: 1;
+      padding: 8px 12px 84px;
+      background: linear-gradient(to bottom, #f4f5fb 0, #ffffff 320px);
+      overflow-y: auto;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page--active {
+      display: block;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 2px 4px 10px;
+    }
+
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .page-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Filters */
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 4px 8px;
+      margin-bottom: 4px;
+    }
+
+    .filter-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      flex-shrink: 0;
+      border-radius: 999px;
+      border: 1px solid var(--outline-soft);
+      padding: 6px 12px;
+      font-size: 12px;
+      background: white;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .filter-chip--active {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: #065f46;
+    }
+
+    /* Ride cards */
+
+    .ride-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 4px 2px 10px;
+    }
+
+    .ride-card {
+      background: white;
+      border-radius: var(--radius-m);
+      padding: 10px 12px;
+      box-shadow: var(--shadow-low);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: 8px;
+      row-gap: 6px;
+    }
+
+    .ride-top {
+      grid-column: 1 / 3;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .ride-route {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .ride-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .ride-price {
+      text-align: right;
+      min-width: 64px;
+    }
+
+    .ride-price-main {
+      font-size: 15px;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .ride-price-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .ride-bottom-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: #e5f3ff;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1d4ed8;
+    }
+
+    .driver-line {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .driver-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .driver-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .ride-bottom-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 10px;
+      background: #f3f4ff;
+      color: #4b5563;
+    }
+
+    .pill--verified {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .pill--female {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .pill--ev {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .btn-ghost {
+      border: none;
+      border-radius: 999px;
+      background: #111827;
+      color: white;
+      padding: 6px 14px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 20px 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Generic cards */
+
+    .card {
+      margin: 8px 4px;
+      padding: 14px 12px;
+      border-radius: var(--radius-m);
+      background: white;
+      border: 1px solid var(--outline-soft);
+      box-shadow: var(--shadow-low);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #111827;
+    }
+
+    /* Map page */
+
+    .parking-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .parking-name {
+      flex: 0 0 36%;
+    }
+
+    .parking-bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+
+    .parking-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .parking-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .parking-badge--low {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .parking-badge--med {
+      background: #fef9c3;
+      color: #854d0e;
+    }
+    .parking-badge--high {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .pickup-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .pickup-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: baseline;
+    }
+
+    .pickup-chip {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: #065f46;
+    }
+
+    /* Trips */
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 10px 6px 4px;
+      color: #111827;
+    }
+
+    .trip-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 4px 10px;
+    }
+
+    .trip-card {
+      background: white;
+      border-radius: var(--radius-m);
+      padding: 10px 12px;
+      border: 1px solid var(--outline-soft);
+      box-shadow: var(--shadow-low);
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .trip-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .trip-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .trip-status {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .trip-status--mine {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    /* Profile */
+
+    .profile-label {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .pref-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .toggle {
+      width: 44px;
+      height: 24px;
+      border-radius: 999px;
+      border: none;
+      padding: 0;
+      background: #e5e7eb;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.15s ease-out;
+    }
+
+    .toggle__thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: #ffffff;
+      box-shadow: var(--shadow-low);
+      transition: transform 0.15s ease-out;
+    }
+
+    .toggle--on {
+      background: var(--primary);
+    }
+
+    .toggle--on .toggle__thumb {
+      transform: translateX(20px);
+    }
+
+    /* Bottom nav */
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-top: 1px solid rgba(148, 163, 184, 0.25);
+      box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.08);
+      z-index: 20;
+    }
+
+    .bottom-nav__inner {
+      margin: 0 auto;
+      max-width: 440px;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 6px 10px 8px;
+    }
+
+    .bottom-nav__item {
+      flex: 1;
+      border: none;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 20px;
+      padding: 6px 0;
+      border-radius: 999px;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+    }
+
+    .bottom-nav__item--active {
+      background: var(--primary-soft);
+      color: #065f46;
+      transform: translateY(-1px);
+    }
+
+    /* FAB */
+
+    .fab {
+      position: fixed;
+      right: 20px;
+      bottom: 86px;
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      border: none;
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-med);
+      cursor: pointer;
+      z-index: 21;
+      font-size: 26px;
+      font-weight: 600;
+    }
+
+    /* Sheets */
+
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 30;
+    }
+
+    .sheet {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translate(-50%, 100%);
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      box-shadow: var(--shadow-med);
+      padding: 8px 16px 14px;
+      z-index: 31;
+      transition: transform 0.25s ease-out;
+    }
+
+    .sheet--open {
+      transform: translate(-50%, 0%);
+    }
+
+    .sheet-backdrop--open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet__handle {
+      width: 32px;
+      height: 4px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      margin: 4px auto 8px;
+    }
+
+    .sheet__header h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+    .sheet__header p {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .sheet__body {
+      max-height: 46vh;
+      overflow-y: auto;
+      padding-right: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field__label {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .field__input {
+      border-radius: 999px;
+      border: 1px solid var(--outline-soft);
+      padding: 9px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .field__input:focus-visible {
+      border-color: var(--primary);
+    }
+
+    .field-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .field-row .field {
+      flex: 1;
+    }
+
+    .sheet__footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid #e5e7eb;
+      margin-top: 6px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn--ghost {
+      background: transparent;
+      border-color: #e5e7eb;
+      color: var(--text-muted);
+    }
+
+    .btn--primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .btn--chip {
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+
+    .co2 {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .request-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .request-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .request-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .request-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      margin-left: 4px;
+    }
+
+    .request-badge--accepted {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .request-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    /* Toast */
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 120px;
+      transform: translateX(-50%);
+      background: #111827;
+      color: white;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 40;
+      box-shadow: var(--shadow-med);
+    }
+
+    .toast--show {
+      opacity: 1;
+    }
+
+    /* Auth overlay */
+
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(150deg, #ecfdf3 0, #ffffff 50%, #e0f2fe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: var(--radius-l);
+      padding: 18px 18px 20px;
+      box-shadow: var(--shadow-med);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .auth-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+
+    .auth-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .auth-footer {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    .otp-row {
+      display: flex;
+      gap: 8px;
+      margin: 6px 0 8px;
+    }
+
+    .otp-input {
+      flex: 1;
+      max-width: 54px;
+      text-align: center;
+    }
+
+    .auth-hidden {
+      display: none;
+    }
+
+    @media (max-width: 360px) {
+      .main {
+        padding-inline: 10px;
+      }
+      .ride-card {
+        padding-inline: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <!-- Auth overlay -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card" id="authStep1">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div class="logo">U</div>
+        <div>
+          <div class="auth-title">Welcome to UniPool</div>
+          <div class="auth-sub">Sign in with your campus email to access shared rides on campus.</div>
+        </div>
+      </div>
+
+      <label class="field">
+        <span class="field__label">Campus email</span>
+        <input class="field__input" id="authEmail" type="email" placeholder="name@university.edu" />
+      </label>
+
+      <label class="field" style="margin-top:8px;">
+        <span class="field__label">Password</span>
+        <input class="field__input" type="password" placeholder="••••••••" />
+      </label>
+
+      <button class="btn btn--primary" id="authNext" style="width:100%;margin-top:14px;">
+        Continue
+      </button>
+
+      <button class="btn btn--ghost" id="authSkip" style="width:100%;margin-top:6px;">
+        Skip for now
+      </button>
+
+      <div class="auth-footer">
+        This is a front-end web app. Your credentials are not sent to a backend server.
+      </div>
+    </div>
+
+    <div class="auth-card auth-hidden" id="authStep2">
+      <div class="auth-title">Verify your student account</div>
+      <div class="auth-sub">Enter your student ID and the 4-digit code sent to your email.</div>
+
+      <label class="field">
+        <span class="field__label">Student ID</span>
+        <input class="field__input" id="authStudentId" placeholder="e.g. 0345678" />
+      </label>
+
+      <div class="field__label" style="margin-top:10px;">Verification code</div>
+      <div class="otp-row">
+        <input class="field__input otp-input" maxlength="1" inputmode="numeric" />
+        <input class="field__input otp-input" maxlength="1" inputmode="numeric" />
+        <input class="field__input otp-input" maxlength="1" inputmode="numeric" />
+        <input class="field__input otp-input" maxlength="1" inputmode="numeric" />
+      </div>
+
+      <button class="btn btn--primary" id="authVerify" style="width:100%;margin-top:8px;">
+        Verify & continue
+      </button>
+      <button class="btn btn--ghost" id="authBack" style="width:100%;margin-top:6px;">
+        Back
+      </button>
+
+      <div class="auth-footer">
+        Verification code is validated locally only for this session.
+      </div>
+    </div>
+  </div>
+
+  <!-- App bar -->
+  <header class="app-bar">
+    <div class="app-bar__left">
+      <div class="logo">U</div>
+      <div class="app-bar__text">
+        <div class="app-name">UniPool</div>
+        <div class="app-subtitle">Smarter campus rides</div>
+      </div>
+    </div>
+    <button class="chip-ghost" id="helpBtn">
+      <span class="chip-ghost-icon">?</span>
+      <span>Help</span>
+    </button>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Discover -->
+    <section class="page page--active" data-page="discover">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Discover</div>
+          <div class="page-sub">Available rides around your campus</div>
+        </div>
+      </div>
+
+      <div class="filter-row" id="filterRow"></div>
+      <div class="ride-list" id="rideList"></div>
+    </section>
+
+    <!-- Map -->
+    <section class="page" data-page="map">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Map</div>
+          <div class="page-sub">Parking occupancy & pickup hotspots</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Live parking occupancy</div>
+
+        <div class="parking-row">
+          <div class="parking-name">P1 car park</div>
+          <div class="parking-bar">
+            <div class="parking-bar-fill" style="width:75%;background:#f97373;"></div>
+          </div>
+          <span class="parking-badge parking-badge--high">Busy</span>
+        </div>
+
+        <div class="parking-row">
+          <div class="parking-name">Library basement</div>
+          <div class="parking-bar">
+            <div class="parking-bar-fill" style="width:45%;background:#facc15;"></div>
+          </div>
+          <span class="parking-badge parking-badge--med">Moderate</span>
+        </div>
+
+        <div class="parking-row">
+          <div class="parking-name">U Residence</div>
+          <div class="parking-bar">
+            <div class="parking-bar-fill" style="width:20%;background:#22c55e;"></div>
+          </div>
+          <span class="parking-badge parking-badge--low">Plenty</span>
+        </div>
+
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">
+          Data is simulated for the web app. Connect this card to real-time parking APIs in production.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Suggested pickup zones</div>
+        <ul class="pickup-list">
+          <li class="pickup-item">
+            <span>🅿️ Lakeside drop-off loop</span>
+            <span class="pickup-chip">Most drivers</span>
+          </li>
+          <li class="pickup-item">
+            <span>🏫 Block C lobby</span>
+            <span class="pickup-chip">Good at peak hours</span>
+          </li>
+          <li class="pickup-item">
+            <span>🚶 U Residence gate</span>
+            <span class="pickup-chip">Safe at night</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Trips -->
+    <section class="page" data-page="trips">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Trips</div>
+          <div class="page-sub">Your bookings & published rides</div>
+        </div>
+      </div>
+
+      <div class="section-title">Bookings</div>
+      <div class="trip-list" id="bookingList"></div>
+
+      <div class="section-title">My rides</div>
+      <div class="trip-list" id="myRideList"></div>
+    </section>
+
+    <!-- Profile -->
+    <section class="page" data-page="profile">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Profile</div>
+          <div class="page-sub">Account & ride preferences</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="profile-label">Account</div>
+        <div>Signed in as: <span id="profileEmail">Guest</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+          In this prototype your session is stored locally on this device only.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="profile-label">Ride preferences</div>
+        <div class="pref-row">
+          <span>Women-only rides</span>
+          <button class="toggle" type="button" data-pref-toggle="female" aria-pressed="false">
+            <span class="toggle__thumb"></span>
+          </button>
+        </div>
+        <div class="pref-row">
+          <span>EV only preferred</span>
+          <button class="toggle" type="button" data-pref-toggle="ev" aria-pressed="false">
+            <span class="toggle__thumb"></span>
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+          These preferences are applied as default filters on the Discover page.
+        </div>
+        <button class="btn btn--primary" id="savePrefsBtn"
+                style="margin-top:10px;width:100%;justify-content:center;">
+          Save preferences
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <div class="bottom-nav__inner">
+      <button class="bottom-nav__item bottom-nav__item--active" data-target="discover" aria-label="Discover">🏠</button>
+      <button class="bottom-nav__item" data-target="map" aria-label="Map">🗺️</button>
+      <button class="bottom-nav__item" data-target="trips" aria-label="Trips">📅</button>
+      <button class="bottom-nav__item" data-target="profile" aria-label="Profile">👤</button>
+    </div>
+  </nav>
+
+  <!-- FAB -->
+  <button class="fab" id="fabPublish" aria-label="Publish a ride">+</button>
+
+  <!-- Backdrop -->
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+
+  <!-- Publish sheet -->
+  <div class="sheet" id="publishSheet">
+    <div class="sheet__handle"></div>
+    <div class="sheet__header">
+      <h2>Publish a ride</h2>
+      <p>Fill in trip details. Other students can request a seat.</p>
+    </div>
+
+    <div class="sheet__body">
+      <label class="field">
+        <span class="field__label">From</span>
+        <input class="field__input" id="fromInput" placeholder="e.g. Sunway Pyramid" />
+      </label>
+
+      <label class="field">
+        <span class="field__label">To</span>
+        <input class="field__input" id="toInput" placeholder="e.g. Taylor's Lakeside Campus" />
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field__label">Date</span>
+          <input type="date" class="field__input" id="dateInput" />
+        </label>
+        <label class="field">
+          <span class="field__label">Time</span>
+          <input type="time" class="field__input" id="timeInput" />
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field__label">Seats</span>
+          <input type="number" class="field__input" id="seatsInput" min="1" max="4" value="1" />
+        </label>
+        <label class="field">
+          <span class="field__label">Price per seat (RM)</span>
+          <input type="number" class="field__input" id="priceInput" min="0" max="20" value="3" />
+        </label>
+      </div>
+
+      <div class="field">
+        <span class="field__label">Preferences (optional)</span>
+        <div class="filter-row" style="padding:4px 0 0;gap:6px;">
+          <button type="button" class="filter-chip" data-pref="female">Women-only</button>
+          <button type="button" class="filter-chip" data-pref="ev">EV only</button>
+        </div>
+      </div>
+
+      <div class="co2">
+        <span>Estimated CO₂ saved: <strong id="co2Value">0.7</strong> kg</span>
+        <span>Green points: <strong id="ptsValue">10</strong> pts</span>
+      </div>
+    </div>
+
+    <div class="sheet__footer">
+      <button class="btn btn--ghost" id="cancelPublish">Cancel</button>
+      <button class="btn btn--primary" id="confirmPublish">Publish</button>
+    </div>
+  </div>
+
+  <!-- Manage sheet -->
+  <div class="sheet" id="manageSheet">
+    <div class="sheet__handle"></div>
+    <div class="sheet__header">
+      <h2>Manage ride</h2>
+      <p id="manageRoute"></p>
+      <p id="manageTime" style="font-size:12px;color:#6b7280;margin-top:-4px;"></p>
+    </div>
+
+    <div class="sheet__body">
+      <div class="card" style="margin:0;">
+        <div class="card-title" style="margin-bottom:4px;">Summary</div>
+        <div id="manageMeta" style="font-size:13px;"></div>
+      </div>
+
+      <div>
+        <div class="card-title" style="margin:10px 0 4px;">Passenger requests</div>
+        <ul class="request-list" id="manageRequests"></ul>
+      </div>
+
+      <div style="font-size:11px;color:#6b7280;">
+        Requests are simulated on this web app. In production you would show real riders here.
+      </div>
+    </div>
+
+    <div class="sheet__footer">
+      <button class="btn btn--ghost" id="manageBack">Back</button>
+      <button class="btn btn--primary" id="manageCloseRide">Close ride</button>
+    </div>
+  </div>
+
+  <!-- Help sheet -->
+  <div class="sheet" id="helpSheet">
+    <div class="sheet__handle"></div>
+    <div class="sheet__header">
+      <h2>Help & support</h2>
+      <p>Need help with UniPool? Reach out to our campus support team.</p>
+    </div>
+
+    <div class="sheet__body">
+      <div class="card" style="margin:0;">
+        <div class="card-title">Contact</div>
+        <div style="font-size:13px;">
+          <div><strong>Hotline:</strong> +60-3-1234 5678</div>
+          <div><strong>WhatsApp:</strong> +60-17-888 9999</div>
+          <div><strong>Email:</strong> support@unipool.app</div>
+          <div style="margin-top:8px;">Available Mon–Fri, 9:00–18:00 (campus time).</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Common questions</div>
+        <ul style="padding-left:18px;margin:0;font-size:13px;">
+          <li>How do I publish a ride?</li>
+          <li>How are student accounts verified?</li>
+          <li>What safety features does UniPool provide?</li>
+        </ul>
+        <div style="font-size:11px;margin-top:8px;">
+          This prototype does not call real phone numbers or send real emails. Replace these values when integrating with production systems.
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet__footer">
+      <button class="btn btn--ghost" id="helpCloseBtn">Close</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  /* ---------- Auth ---------- */
+
+  const authOverlay = $('#authOverlay');
+  const step1 = $('#authStep1');
+  const step2 = $('#authStep2');
+  const authEmail = $('#authEmail');
+  const profileEmail = $('#profileEmail');
+
+  function finishAuth(email) {
+    authOverlay.style.display = 'none';
+    profileEmail.textContent = email || 'Guest';
+  }
+
+  $('#authNext').addEventListener('click', () => {
+    if (!authEmail.value.trim()) {
+      showToast('Please enter your campus email.');
+      return;
+    }
+    step1.classList.add('auth-hidden');
+    step2.classList.remove('auth-hidden');
+    showToast('We just sent you a 4-digit code (sample).');
+  });
+
+  $('#authBack').addEventListener('click', () => {
+    step2.classList.add('auth-hidden');
+    step1.classList.remove('auth-hidden');
+  });
+
+  $('#authSkip').addEventListener('click', () => {
+    finishAuth('');
+    showToast('Signed in as guest for this session.');
+  });
+
+  $('#authVerify').addEventListener('click', () => {
+    finishAuth(authEmail.value.trim());
+    showToast('You are signed in for this session.');
+  });
+
+  $$('.otp-input').forEach((inp, idx, arr) => {
+    inp.addEventListener('input', () => {
+      if (inp.value && idx < arr.length - 1) arr[idx + 1].focus();
+    });
+  });
+
+  /* ---------- Data & preferences ---------- */
+
+  // load ride prefs from localStorage
+  let prefs = JSON.parse(localStorage.getItem('unipool_prefs') || 'null') || {
+    femaleOnly: false,
+    evOnly: false
+  };
+
+  let baseRides = [
+    {
+      id: 1,
+      initials: 'AA',
+      driver: 'Alina A.',
+      from: "Sunway Pyramid",
+      to: "Taylor's Block C",
+      timeLabel: 'Today · 08:30',
+      price: 3,
+      seats: 2,
+      rating: 4.9,
+      femaleOnly: false,
+      ev: true
+    },
+    {
+      id: 2,
+      initials: 'SH',
+      driver: 'Seohee',
+      from: "SS15",
+      to: "Taylor\'s Block B",
+      timeLabel: 'Today · 21:15',
+      price: 2,
+      seats: 1,
+      rating: 4.8,
+      femaleOnly: true,
+      ev: false
+    },
+    {
+      id: 3,
+      initials: 'Y',
+      driver: 'Yin',
+      from: "KLCC",
+      to: "Taylor\'s Block D",
+      timeLabel: 'Tomorrow · 09:10',
+      price: 4,
+      seats: 3,
+      rating: 4.7,
+      femaleOnly: false,
+      ev: false
+    }
+  ];
+
+  let myRides = JSON.parse(localStorage.getItem('unipool_my_rides') || '[]');
+  let bookings = JSON.parse(localStorage.getItem('unipool_bookings') || '[]');
+
+  const filters = {
+    today: true,
+    female: prefs.femaleOnly,
+    ev: prefs.evOnly
+  };
+
+  function saveMyRides() {
+    localStorage.setItem('unipool_my_rides', JSON.stringify(myRides));
+  }
+  function saveBookings() {
+    localStorage.setItem('unipool_bookings', JSON.stringify(bookings));
+  }
+  function savePrefs() {
+    localStorage.setItem('unipool_prefs', JSON.stringify(prefs));
+  }
+
+  /* ---------- Generate fake requests for a ride ---------- */
+
+  function ensureRequestsForRide(ride) {
+    if (!ride.requests || !Array.isArray(ride.requests) || ride.requests.length === 0) {
+      const samples = [
+        { name: 'Alina', seats: 1 },
+        { name: 'Jordan', seats: 1 },
+        { name: 'Sam', seats: 2 }
+      ];
+      const count = Math.random() < 0.5 ? 1 : 2;
+      ride.requests = samples.slice(0, count).map((s, i) => ({
+        id: Date.now() + i,
+        name: s.name,
+        seats: s.seats,
+        status: i === 0 ? 'Accepted' : 'Pending'
+      }));
+      saveMyRides();
+    }
+  }
+
+  /* ---------- Discover ---------- */
+
+  function renderFilters() {
+    const row = $('#filterRow');
+    row.innerHTML = '';
+    const DEF = [
+      ['today', 'Today'],
+      ['female', 'Women-only'],
+      ['ev', 'EV only']
+    ];
+    DEF.forEach(([key, text]) => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-chip' + (filters[key] ? ' filter-chip--active' : '');
+      btn.textContent = text;
+      btn.dataset.key = key;
+      btn.addEventListener('click', () => {
+        filters[key] = !filters[key];
+        renderFilters();
+        renderRides();
+      });
+      row.appendChild(btn);
+    });
+  }
+
+  function combinedRides() {
+    return [...myRides.map(r => ({ ...r, isMine: true })), ...baseRides];
+  }
+
+  function renderRides() {
+    const list = $('#rideList');
+    list.innerHTML = '';
+
+    const filtered = combinedRides().filter(r => {
+      if (filters.female && !r.femaleOnly) return false;
+      if (filters.ev && !r.ev) return false;
+      return true;
+    });
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty">No rides match your filters yet. Try relaxing filters or add your own ride.</div>';
+      return;
+    }
+
+    filtered.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'ride-card';
+      const labelMine = r.isMine ? ' (you)' : '';
+      card.innerHTML = `
+        <div class="ride-top">
+          <div>
+            <div class="ride-route">${r.from} → ${r.to}</div>
+            <div class="ride-time">${r.timeLabel}</div>
+          </div>
+          <div class="ride-price">
+            <div class="ride-price-main">RM ${r.price}</div>
+            <div class="ride-price-sub">per seat</div>
+          </div>
+        </div>
+
+        <div class="ride-bottom-left">
+          <div class="avatar">${r.initials || 'ME'}</div>
+          <div class="driver-line">
+            <div class="driver-name">${r.driver}${labelMine}</div>
+            <div class="driver-meta">Seats left ${r.seats} · ⭐ ${r.rating || '5.0'}</div>
+          </div>
+        </div>
+
+        <div class="ride-bottom-right">
+          <div class="pill-row">
+            <span class="pill pill--verified">Verified</span>
+            ${r.femaleOnly ? '<span class="pill pill--female">Women-only</span>' : ''}
+            ${r.ev ? '<span class="pill pill--ev">EV</span>' : ''}
+          </div>
+          <button class="btn-ghost" type="button">${r.isMine ? 'Manage' : 'Request'}</button>
+        </div>
+      `;
+      const btn = card.querySelector('.btn-ghost');
+      if (r.isMine) {
+        btn.addEventListener('click', () => openManageSheet(r));
+      } else {
+        btn.addEventListener('click', () => {
+          const booking = {
+            id: Date.now(),
+            from: r.from,
+            to: r.to,
+            timeLabel: r.timeLabel,
+            price: r.price,
+            driver: r.driver,
+            status: 'Pending'
+          };
+          bookings.unshift(booking);
+          saveBookings();
+          renderTrips();
+          showToast('Request sent. Driver will confirm soon.');
+        });
+      }
+      list.appendChild(card);
+    });
+  }
+
+  renderFilters();
+  renderRides();
+
+  /* ---------- Trips ---------- */
+
+  function renderTrips() {
+    const bookingList = $('#bookingList');
+    const myRideList = $('#myRideList');
+    bookingList.innerHTML = '';
+    myRideList.innerHTML = '';
+
+    if (!bookings.length) {
+      bookingList.innerHTML = '<div class="empty">You haven\'t requested any rides yet.</div>';
+    } else {
+      bookings.forEach(b => {
+        const el = document.createElement('div');
+        el.className = 'trip-card';
+        el.innerHTML = `
+          <div class="trip-main">
+            <div class="trip-title">${b.from} → ${b.to}</div>
+            <div>${b.timeLabel}</div>
+            <div>Driver: ${b.driver}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <span class="trip-status">${b.status}</span>
+            <button class="btn-ghost" style="padding:4px 10px;font-size:11px;">Cancel</button>
+          </div>
+        `;
+        el.querySelector('.btn-ghost').addEventListener('click', () => {
+          bookings = bookings.filter(x => x.id !== b.id);
+          saveBookings();
+          renderTrips();
+          showToast('Booking cancelled.');
+        });
+        bookingList.appendChild(el);
+      });
+    }
+
+    if (!myRides.length) {
+      myRideList.innerHTML = '<div class="empty">You haven\'t published any rides yet.</div>';
+    } else {
+      myRides.forEach(r => {
+        const el = document.createElement('div');
+        el.className = 'trip-card';
+        el.innerHTML = `
+          <div class="trip-main">
+            <div class="trip-title">${r.from} → ${r.to}</div>
+            <div>${r.timeLabel}</div>
+            <div>Seats: ${r.seats} · RM ${r.price} / seat</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <span class="trip-status trip-status--mine">Active</span>
+            <button class="btn-ghost" style="padding:4px 10px;font-size:11px;">Manage</button>
+          </div>
+        `;
+        el.querySelector('.btn-ghost').addEventListener('click', () => openManageSheet(r));
+        myRideList.appendChild(el);
+      });
+    }
+  }
+
+  renderTrips();
+
+  /* ---------- Bottom nav ---------- */
+
+  const pages = $$('[data-page]');
+  $$('.bottom-nav__item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      $$('.bottom-nav__item').forEach(b => b.classList.toggle('bottom-nav__item--active', b === btn));
+      pages.forEach(p => p.classList.toggle('page--active', p.dataset.page === target));
+    });
+  });
+
+  /* ---------- Sheets & FAB ---------- */
+
+  const backdrop = $('#sheetBackdrop');
+  const publishSheet = $('#publishSheet');
+  const manageSheet = $('#manageSheet');
+  const helpSheet = $('#helpSheet');
+
+  function openSheet(sheet) {
+    sheet.classList.add('sheet--open');
+    backdrop.classList.add('sheet-backdrop--open');
+  }
+  function closeSheet(sheet) {
+    sheet.classList.remove('sheet--open');
+    backdrop.classList.remove('sheet-backdrop--open');
+  }
+
+  function openPublishSheet() {
+    openSheet(publishSheet);
+  }
+  function closePublishSheet() {
+    closeSheet(publishSheet);
+  }
+
+  let currentManagedRide = null;
+
+  function renderRequestsInManage(ride) {
+    const list = $('#manageRequests');
+    list.innerHTML = '';
+    if (!ride.requests || !ride.requests.length) {
+      list.innerHTML = '<li class="request-item"><span>No requests yet. Share your ride link with friends.</span></li>';
+      return;
+    }
+    ride.requests.forEach(req => {
+      const li = document.createElement('li');
+      li.className = 'request-item';
+      const badgeClass = req.status === 'Accepted'
+        ? 'request-badge request-badge--accepted'
+        : 'request-badge';
+
+      li.innerHTML = `
+        <div class="request-main">
+          <span>${req.name} · ${req.seats} seat${req.seats > 1 ? 's' : ''}</span>
+          <span style="font-size:11px;color:#6b7280;">Student ID • EV rider</span>
+        </div>
+        <div class="request-actions">
+          <span class="${badgeClass}">${req.status}</span>
+          ${req.status === 'Pending'
+            ? '<button class="btn btn--ghost btn--chip">Accept</button>'
+            : ''}
+        </div>
+      `;
+
+      const acceptBtn = li.querySelector('button');
+      if (acceptBtn) {
+        acceptBtn.addEventListener('click', () => {
+          req.status = 'Accepted';
+          saveMyRides();
+          renderRequestsInManage(ride);
+          showToast('Request accepted.');
+        });
+      }
+
+      list.appendChild(li);
+    });
+  }
+
+  function openManageSheet(ride) {
+    const real = myRides.find(r => r.id === ride.id) || ride;
+    ensureRequestsForRide(real);
+    currentManagedRide = real;
+
+    $('#manageRoute').textContent = `${real.from} → ${real.to}`;
+    $('#manageTime').textContent = real.timeLabel;
+    $('#manageMeta').textContent = `Seats: ${real.seats} · RM ${real.price} per seat`;
+    renderRequestsInManage(real);
+
+    openSheet(manageSheet);
+  }
+
+  function closeManageSheet() {
+    currentManagedRide = null;
+    closeSheet(manageSheet);
+  }
+
+  function openHelpSheet() {
+    openSheet(helpSheet);
+  }
+  function closeHelpSheet() {
+    closeSheet(helpSheet);
+  }
+
+  $('#fabPublish').addEventListener('click', openPublishSheet);
+  $('#cancelPublish').addEventListener('click', closePublishSheet);
+
+  $('#manageBack').addEventListener('click', closeManageSheet);
+  $('#manageCloseRide').addEventListener('click', () => {
+    if (!currentManagedRide) return;
+    myRides = myRides.filter(x => x.id !== currentManagedRide.id);
+    saveMyRides();
+    renderRides();
+    renderTrips();
+    closeManageSheet();
+    showToast('Ride closed.');
+  });
+
+  $('#helpBtn').addEventListener('click', openHelpSheet);
+  $('#helpCloseBtn').addEventListener('click', closeHelpSheet);
+
+  backdrop.addEventListener('click', () => {
+    closePublishSheet();
+    closeManageSheet();
+    closeHelpSheet();
+  });
+
+  /* ---------- Publish ---------- */
+
+  function updateCo2() {
+    const seats = parseInt($('#seatsInput').value || '1', 10);
+    $('#co2Value').textContent = (seats * 0.7).toFixed(1);
+    $('#ptsValue').textContent = seats * 10;
+  }
+
+  $('#seatsInput').addEventListener('input', updateCo2);
+  updateCo2();
+
+  $('#confirmPublish').addEventListener('click', () => {
+    const from = $('#fromInput').value.trim();
+    const to = $('#toInput').value.trim();
+    const date = $('#dateInput').value;
+    const time = $('#timeInput').value;
+    const seats = parseInt($('#seatsInput').value || '1', 10);
+    const price = parseFloat($('#priceInput').value || '0');
+    const prefButtons = $$('[data-pref]');
+    let female = false, ev = false;
+    prefButtons.forEach(b => {
+      if (b.classList.contains('filter-chip--active')) {
+        if (b.dataset.pref === 'female') female = true;
+        if (b.dataset.pref === 'ev') ev = true;
+      }
+    });
+
+    if (!from || !to || !date || !time) {
+      showToast('Please fill in from, to, date and time.');
+      return;
+    }
+
+    const timeLabel = `${date} · ${time}`;
+    const ride = {
+      id: Date.now(),
+      initials: 'YOU',
+      driver: 'You',
+      from,
+      to,
+      timeLabel,
+      price,
+      seats,
+      rating: 5.0,
+      femaleOnly: female,
+      ev,
+      requests: []
+    };
+
+    myRides.unshift(ride);
+    saveMyRides();
+    renderRides();
+    renderTrips();
+    closePublishSheet();
+    showToast('Ride published. You can manage it from Trips or Discover.');
+  });
+
+  $$('[data-pref]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('filter-chip--active');
+    });
+  });
+
+  /* ---------- Profile preferences UI ---------- */
+
+  const femaleToggle = $('[data-pref-toggle="female"]');
+  const evToggle = $('[data-pref-toggle="ev"]');
+
+  function updateToggle(btn, on) {
+    if (!btn) return;
+    btn.classList.toggle('toggle--on', on);
+    btn.setAttribute('aria-pressed', String(on));
+  }
+
+  function syncProfileToggles() {
+    updateToggle(femaleToggle, prefs.femaleOnly);
+    updateToggle(evToggle, prefs.evOnly);
+  }
+
+  if (femaleToggle && evToggle) {
+    femaleToggle.addEventListener('click', () => {
+      prefs.femaleOnly = !prefs.femaleOnly;
+      updateToggle(femaleToggle, prefs.femaleOnly);
+    });
+
+    evToggle.addEventListener('click', () => {
+      prefs.evOnly = !prefs.evOnly;
+      updateToggle(evToggle, prefs.evOnly);
+    });
+  }
+
+  $('#savePrefsBtn').addEventListener('click', () => {
+    savePrefs();
+    filters.female = prefs.femaleOnly;
+    filters.ev = prefs.evOnly;
+    renderFilters();
+    renderRides();
+    showToast('Preferences saved. Discover filters updated.');
+  });
+
+  syncProfileToggles();
+
+  /* ---------- Toast ---------- */
+
+  const toast = $('#toast');
+  let toastTimer;
+  function showToast(msg, ms = 1800) {
+    toast.textContent = msg;
+    toast.classList.add('toast--show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('toast--show'), ms);
+  }
+</script>
+</body>
+</html>
